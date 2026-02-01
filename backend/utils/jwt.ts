@@ -1,10 +1,10 @@
-import jwt from 'jsonwebtoken';
+import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
 // @ts-ignore
 import { UserRole, TenantState } from '@prisma/client';
 
-const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'fallback-secret';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'fallback-refresh-secret';
+const JWT_ACCESS_SECRET = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET || 'fallback-secret-12345678');
+const JWT_REFRESH_SECRET = new TextEncoder().encode(process.env.JWT_REFRESH_SECRET || 'fallback-refresh-secret-12345678');
 const JWT_ACCESS_EXPIRY = process.env.JWT_ACCESS_EXPIRY || '15m';
 const JWT_REFRESH_EXPIRY = process.env.JWT_REFRESH_EXPIRY || '7d';
 
@@ -22,42 +22,46 @@ export interface TokenPair {
 }
 
 // Generate access token
-export function generateAccessToken(payload: JWTPayload): string {
-    return jwt.sign(payload, JWT_ACCESS_SECRET, {
-        expiresIn: JWT_ACCESS_EXPIRY as any,
-    });
+export async function generateAccessToken(payload: JWTPayload): Promise<string> {
+    return new SignJWT({ ...payload })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime(JWT_ACCESS_EXPIRY)
+        .sign(JWT_ACCESS_SECRET);
 }
 
 // Generate refresh token
-export function generateRefreshToken(payload: JWTPayload): string {
-    return jwt.sign(payload, JWT_REFRESH_SECRET, {
-        expiresIn: JWT_REFRESH_EXPIRY as any,
-    });
+export async function generateRefreshToken(payload: JWTPayload): Promise<string> {
+    return new SignJWT({ ...payload })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime(JWT_REFRESH_EXPIRY)
+        .sign(JWT_REFRESH_SECRET);
 }
 
 // Generate both tokens
-export function generateTokenPair(payload: JWTPayload): TokenPair {
+export async function generateTokenPair(payload: JWTPayload): Promise<TokenPair> {
     return {
-        accessToken: generateAccessToken(payload),
-        refreshToken: generateRefreshToken(payload),
+        accessToken: await generateAccessToken(payload),
+        refreshToken: await generateRefreshToken(payload),
     };
 }
 
 // Verify access token
-export function verifyAccessToken(token: string): JWTPayload | null {
+export async function verifyAccessToken(token: string): Promise<JWTPayload | null> {
     try {
-        const decoded = jwt.verify(token, JWT_ACCESS_SECRET) as JWTPayload;
-        return decoded;
+        const { payload } = await jwtVerify(token, JWT_ACCESS_SECRET);
+        return payload as unknown as JWTPayload;
     } catch (error) {
         return null;
     }
 }
 
 // Verify refresh token
-export function verifyRefreshToken(token: string): JWTPayload | null {
+export async function verifyRefreshToken(token: string): Promise<JWTPayload | null> {
     try {
-        const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as JWTPayload;
-        return decoded;
+        const { payload } = await jwtVerify(token, JWT_REFRESH_SECRET);
+        return payload as unknown as JWTPayload;
     } catch (error) {
         return null;
     }

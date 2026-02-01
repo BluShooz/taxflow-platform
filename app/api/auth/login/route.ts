@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Generate tokens
-        const tokens = generateTokenPair({
+        const tokens = await generateTokenPair({
             userId: user.id,
             email: user.email,
             role: user.role,
