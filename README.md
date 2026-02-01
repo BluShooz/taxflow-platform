@@ -4,8 +4,31 @@
 
 ### 🌐 Live Demo: [taxflow-platform.vercel.app](https://taxflow-platform.vercel.app)
 
+### 🧪 Quick Test Page: [taxflow-platform.vercel.app/quick-test](https://taxflow-platform.vercel.app/quick-test)
+
+> [!IMPORTANT]
+> **Client Testing**: Use the Quick Test Page above for the easiest login experience. Click "🚀 Test Full Login Flow" then "🎯 Navigate to Portal" to access the admin dashboard.
+
 > [!TIP]
 > **Zero-Config Demo Mode**: This application features a "Demo Mode" fallback. If you deploy it to Vercel without a database or API keys, the UI will still work perfectly using the demo credentials below.
+
+## 🎯 Quick Start for Testing
+
+### Option 1: Quick Test Page (Recommended)
+1. Visit: [taxflow-platform.vercel.app/quick-test](https://taxflow-platform.vercel.app/quick-test)
+2. Click **"🚀 Test Full Login Flow"**
+3. Click **"🎯 Navigate to Portal"**
+4. You're now in the admin dashboard!
+
+### Option 2: Traditional Login
+1. Visit: [taxflow-platform.vercel.app/login](https://taxflow-platform.vercel.app/login)
+2. Use demo credentials (see below)
+3. Click **"Log In to Dashboard"**
+
+### Demo Credentials
+- **SaaS Owner**: `owner@taxflow.com` / `admin123` → Admin Portal
+- **Tax Professional**: `pro@taxflow.com` / `pro123` → Pro Portal
+- **Client**: `client@taxflow.com` / `client123` → Client Portal
 
 ## 🚀 Features
 
