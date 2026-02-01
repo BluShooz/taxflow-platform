@@ -2,18 +2,20 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogIn, Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('owner@taxflow.com');
     const [password, setPassword] = useState('admin123');
     const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState('');
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleLogin = async () => {
+        if (loading) return;
+
         setLoading(true);
+        setStatus('Connecting to server...');
         setError(null);
 
         try {
@@ -29,6 +31,8 @@ export default function LoginPage() {
                 throw new Error(data.error || 'Login failed');
             }
 
+            setStatus('Login successful! Securely storing credentials...');
+
             // Set cookie for middleware (Secure flag required for HTTPS production)
             const isProduction = window.location.protocol === 'https:';
             const cookieString = `taxflow_token=${data.accessToken}; path=/; max-age=3600; SameSite=Lax${isProduction ? '; Secure' : ''}`;
@@ -41,18 +45,21 @@ export default function LoginPage() {
                 refreshToken: data.refreshToken
             }));
 
+            setStatus(`Redirecting to ${data.user.role} portal...`);
+
             // Redirect to appropriate portal
             if (data.user.role === 'CLIENT') {
-                router.push('/portal/client');
+                window.location.href = '/portal/client';
             } else if (data.user.role === 'TAX_PRO') {
-                router.push('/portal/pro');
+                window.location.href = '/portal/pro';
             } else if (data.user.role === 'SAAS_OWNER') {
-                router.push('/portal/admin');
+                window.location.href = '/portal/admin';
             } else {
                 setError('Role not recognized for portal entry.');
             }
         } catch (err: any) {
             setError(err.message);
+            setStatus('');
         } finally {
             setLoading(false);
         }
@@ -64,53 +71,49 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-mesh flex items-center justify-center p-6">
-            <div className="w-full max-w-md">
-                <div className="text-center mb-10">
-                    <div className="bg-primary h-12 w-12 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-primary/30">
-                        <LogIn className="text-white h-6 w-6" />
-                    </div>
-                    <h1 className="text-3xl font-bold text-slate-900">Welcome Back</h1>
-                    <p className="text-slate-500 mt-2 font-medium">Log in to your TaxFlow account</p>
+        <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+            <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div className="bg-indigo-600 p-6 text-center">
+                    <h1 className="text-2xl font-bold text-white">TaxFlow Login</h1>
+                    <p className="text-indigo-100 text-sm mt-1">Secure Client Access</p>
                 </div>
 
-                <div className="glass-morphism p-8 rounded-3xl border-white/20 shadow-2xl">
+                <div className="p-8">
                     <div className="space-y-6">
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Email Address</label>
-                            <div className="relative group">
-                                <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 group-focus-within:text-primary transition-colors" />
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="Enter your email"
-                                    className="w-full bg-white/50 border border-slate-200 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
-                                    required
-                                />
-                            </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                placeholder="name@company.com"
+                            />
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Password</label>
-                            <div className="relative group">
-                                <Lock className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 group-focus-within:text-primary transition-colors" />
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleLogin(e as any)}
-                                    placeholder="••••••••"
-                                    className="w-full bg-white/50 border border-slate-200 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
-                                    required
-                                />
-                            </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Password</label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                                className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-300 text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                placeholder="••••••••"
+                            />
                         </div>
 
                         {error && (
-                            <div className="flex items-center gap-2 p-4 bg-red-50 text-red-700 rounded-2xl text-sm border border-red-100 animate-in slide-in-from-top-2">
-                                <AlertCircle size={18} />
-                                <span className="font-semibold">{error}</span>
+                            <div className="p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
+                                <p className="font-bold">Login Error</p>
+                                <p className="text-sm">{error}</p>
+                            </div>
+                        )}
+
+                        {status && (
+                            <div className="p-4 bg-blue-50 border-l-4 border-blue-500 text-blue-700">
+                                <p className="font-bold">Status</p>
+                                <p className="text-sm">{status}</p>
                             </div>
                         )}
 
@@ -118,57 +121,41 @@ export default function LoginPage() {
                             type="button"
                             onClick={handleLogin}
                             disabled={loading}
-                            className="w-full bg-primary hover:bg-primary-hover text-white rounded-2xl py-4 font-bold shadow-xl shadow-primary/20 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform transition hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {loading ? (
-                                <span className="flex items-center gap-2">
-                                    <Loader2 className="animate-spin h-5 w-5" />
-                                    Logging in...
-                                </span>
-                            ) : (
-                                'Log In to Dashboard'
-                            )}
+                            {loading ? 'Processing...' : 'Log In to Dashboard'}
                         </button>
                     </div>
 
-                    <div className="mt-8 pt-8 border-t border-slate-200 text-center">
-                        <p className="text-sm text-slate-500 mb-4 tracking-tighter uppercase font-black">Platform Interrogation Access</p>
-                        <div className="grid grid-cols-1 gap-3">
+                    <div className="mt-8 pt-6 border-t border-slate-100">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 text-center">Demo Credentials</p>
+                        <div className="grid gap-3">
                             <button
                                 type="button"
                                 onClick={() => fillDemo('client@taxflow.com', 'client123')}
-                                className="bg-slate-50 p-3 rounded-2xl text-[10px] font-mono text-left border border-slate-100 flex items-center justify-between hover:bg-slate-100 transition-colors"
+                                className="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-left transition-colors"
                             >
-                                <div>
-                                    <p className="text-primary font-bold">CLIENT: client@taxflow.com</p>
-                                    <p className="text-slate-400">Pass: client123</p>
-                                </div>
-                                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                <p className="text-indigo-600 font-bold text-xs">CLIENT</p>
+                                <p className="text-slate-500 text-xs truncate">client@taxflow.com</p>
                             </button>
                             <button
                                 type="button"
                                 onClick={() => fillDemo('pro@taxflow.com', 'pro123')}
-                                className="bg-slate-50 p-3 rounded-2xl text-[10px] font-mono text-left border border-slate-100 hover:bg-slate-100 transition-colors"
+                                className="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-left transition-colors"
                             >
-                                <p className="text-purple-600 font-bold">TAX PRO: pro@taxflow.com</p>
-                                <p className="text-slate-400">Pass: pro123</p>
+                                <p className="text-purple-600 font-bold text-xs">TAX PRO</p>
+                                <p className="text-slate-500 text-xs truncate">pro@taxflow.com</p>
                             </button>
                             <button
                                 type="button"
                                 onClick={() => fillDemo('owner@taxflow.com', 'admin123')}
-                                className="bg-slate-50 p-3 rounded-2xl text-[10px] font-mono text-left border border-slate-100 hover:bg-slate-100 transition-colors"
+                                className="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-left transition-colors"
                             >
-                                <p className="text-slate-900 font-bold">SAAS OWNER: owner@taxflow.com</p>
-                                <p className="text-slate-400">Pass: admin123</p>
+                                <p className="text-slate-900 font-bold text-xs">OWNER</p>
+                                <p className="text-slate-500 text-xs truncate">owner@taxflow.com</p>
                             </button>
                         </div>
                     </div>
-                </div>
-
-                <div className="text-center mt-8">
-                    <p className="text-sm text-slate-500">
-                        Don't have an account? <a href="#" className="text-primary font-bold hover:underline">Request Access</a>
-                    </p>
                 </div>
             </div>
         </div>
