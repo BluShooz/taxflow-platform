@@ -29,8 +29,10 @@ export default function LoginPage() {
                 throw new Error(data.error || 'Login failed');
             }
 
-            // Set cookie for middleware
-            document.cookie = `taxflow_token=${data.accessToken}; path=/; max-age=3600; SameSite=Lax`;
+            // Set cookie for middleware (Secure flag required for HTTPS production)
+            const isProduction = window.location.protocol === 'https:';
+            const cookieString = `taxflow_token=${data.accessToken}; path=/; max-age=3600; SameSite=Lax${isProduction ? '; Secure' : ''}`;
+            document.cookie = cookieString;
 
             // Store user data in localStorage for the "battle test"
             localStorage.setItem('taxflow_session', JSON.stringify({
