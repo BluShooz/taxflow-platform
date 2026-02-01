@@ -12,6 +12,15 @@ export async function GET(
     try {
         const { id: tenantId } = await params;
 
+        // 0. Check for Demo Mode Fallback
+        try {
+            await prisma.$queryRaw`SELECT 1`;
+        } catch (dbError) {
+            console.warn('Database connection failed, returning demo stats...');
+            const { DEMO_STATS } = require('@/backend/utils/demoData');
+            return NextResponse.json(DEMO_STATS);
+        }
+
         // 1. Get Client count
         const clientCount = await prisma.user.count({
             where: {

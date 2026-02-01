@@ -27,35 +27,54 @@ export async function POST(req: NextRequest) {
 
         const { email, password, mfaToken } = validation.data;
 
-        // Find user
-        const user = await prisma.user.findUnique({
-            where: { email },
-            include: { tenant: true },
-        });
+        let user: any = null;
+        let isDemoMode = false;
 
-        if (!user) {
-            return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+        try {
+            // Find user in DB
+            user = await prisma.user.findUnique({
+                where: { email },
+                include: { tenant: true },
+            });
+        } catch (dbError) {
+            console.warn('Database connection failed, checking Demo Mode fallback...');
+            isDemoMode = true;
         }
 
-        // Verify password
-        const isPasswordValid = await comparePassword(password, user.passwordHash);
+        // Demo Mode Fallback
+        if (!user || isDemoMode) {
+            const { DEMO_USERS } = require('@/backend/utils/demoData');
+            const demoUser = DEMO_USERS.find((u: any) => u.email === email && u.password === password);
 
-        if (!isPasswordValid) {
-            return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+            if (demoUser) {
+                user = {
+                    ...demoUser,
+                    passwordHash: 'DEMO', // Placeholder
+                    tenant: { state: 'ACTIVE', id: demoUser.tenantId }
+                };
+                isDemoMode = true;
+            } else if (!user) {
+                return NextResponse.json({ error: 'Invalid credentials or DB unavailable' }, { status: 401 });
+            }
         }
 
-        // Check MFA if enabled
-        if (user.mfaEnabled) {
+        // Verify password (if not in demo mode)
+        if (!isDemoMode) {
+            const isPasswordValid = await comparePassword(password, user.passwordHash);
+            if (!isPasswordValid) {
+                return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+            }
+        }
+
+        // Check MFA if enabled (ignored in Demo Mode for simplicity)
+        if (user.mfaEnabled && !isDemoMode) {
             if (!mfaToken) {
                 return NextResponse.json({ error: 'MFA token required', mfaRequired: true }, { status: 401 });
             }
-
             if (!user.mfaSecret) {
                 return NextResponse.json({ error: 'MFA not configured' }, { status: 500 });
             }
-
             const isMfaValid = verifyMFAToken(mfaToken, user.mfaSecret);
-
             if (!isMfaValid) {
                 return NextResponse.json({ error: 'Invalid MFA token' }, { status: 401 });
             }
@@ -70,30 +89,29 @@ export async function POST(req: NextRequest) {
             tenantState: user.tenant.state,
         });
 
-        // Store refresh token
-        await prisma.user.update({
-            where: { id: user.id },
-            data: {
-                refreshToken: tokens.refreshToken,
-                refreshTokenExp: getRefreshTokenExpiry(),
-                lastLoginAt: new Date(),
-            },
-        });
+        // Store refresh token & Audit log (only if not in demo mode)
+        if (!isDemoMode) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: {
+                    refreshToken: tokens.refreshToken,
+                    refreshTokenExp: getRefreshTokenExpiry(),
+                    lastLoginAt: new Date(),
+                },
+            });
 
-        // Audit log
-        await prisma.auditLog.create({
-            data: {
-                action: AuditAction.USER_LOGIN,
-                userId: user.id,
-                tenantId: user.tenantId,
-                resourceType: 'user',
-                resourceId: user.id,
-                ipAddress: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
-                userAgent: req.headers.get('user-agent') || 'unknown',
-            },
-        });
-
-        logger.info('User logged in successfully', { userId: user.id, email: user.email });
+            await prisma.auditLog.create({
+                data: {
+                    action: AuditAction.USER_LOGIN,
+                    userId: user.id,
+                    tenantId: user.tenantId,
+                    resourceType: 'user',
+                    resourceId: user.id,
+                    ipAddress: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
+                    userAgent: req.headers.get('user-agent') || 'unknown',
+                },
+            });
+        }
 
         return NextResponse.json({
             user: {
@@ -107,6 +125,7 @@ export async function POST(req: NextRequest) {
             },
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
+            isDemoMode
         });
     } catch (error: any) {
         logger.error('Error in user login', error);

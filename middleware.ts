@@ -43,6 +43,7 @@ export async function middleware(request: NextRequest) {
         // 3. Verify token
         const { payload } = await jwtVerify(token, JWT_ACCESS_SECRET);
         const userRole = payload.role as string;
+        const tenantId = payload.tenantId as string;
 
         // 4. Enforce RBAC
         // Client Portal
@@ -60,7 +61,25 @@ export async function middleware(request: NextRequest) {
             return NextResponse.json({ error: 'Forbidden: SaaS Owners only' }, { status: 403 });
         }
 
-        // 5. Success
+        // 5. Cross-Tenant Protection (Lateral Movement Prevention)
+        // If the path contains a tenant ID as a param /api/tenant/[id]
+        const tenantMatch = pathname.match(/\/api\/tenant\/([^\/]+)/);
+        if (tenantMatch && userRole !== 'SAAS_OWNER') {
+            const requestedTenantId = tenantMatch[1];
+            if (requestedTenantId !== tenantId) {
+                return NextResponse.json({ error: 'Forbidden: Cross-tenant access denied' }, { status: 403 });
+            }
+        }
+
+        // For /api/files, check tenantId in searchParams
+        if (pathname.startsWith('/api/files') && userRole !== 'SAAS_OWNER') {
+            const requestedTenantId = request.nextUrl.searchParams.get('tenantId');
+            if (requestedTenantId && requestedTenantId !== tenantId) {
+                return NextResponse.json({ error: 'Forbidden: Cross-tenant access denied' }, { status: 403 });
+            }
+        }
+
+        // 6. Success
         return NextResponse.next();
     } catch (error) {
         console.error('Middleware JWT Error:', error);

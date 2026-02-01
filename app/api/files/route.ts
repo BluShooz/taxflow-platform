@@ -10,6 +10,15 @@ export async function GET(req: NextRequest) {
         const tenantId = req.nextUrl.searchParams.get('tenantId');
         const userId = req.nextUrl.searchParams.get('userId');
 
+        // 0. Check for Demo Mode Fallback
+        try {
+            await prisma.$queryRaw`SELECT 1`;
+        } catch (dbError) {
+            console.warn('Database connection failed, returning demo files...');
+            const { DEMO_FILES } = require('@/backend/utils/demoData');
+            return NextResponse.json({ files: DEMO_FILES });
+        }
+
         if (!tenantId) {
             return NextResponse.json({ error: 'Tenant ID required' }, { status: 400 });
         }

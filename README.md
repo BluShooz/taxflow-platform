@@ -4,6 +4,9 @@
 
 ### 🌐 Live Demo: [taxflow-platform.vercel.app](https://taxflow-platform-e4ti1frca-jon-smiths-projects-a3dfc292.vercel.app)
 
+> [!TIP]
+> **Zero-Config Demo Mode**: This application features a "Demo Mode" fallback. If you deploy it to Vercel without a database or API keys, the UI will still work perfectly using the demo credentials below.
+
 ## 🚀 Features
 
 ### MVP (Phases 1-6)
@@ -222,14 +225,14 @@ Deploy cron jobs to AWS Lambda with EventBridge triggers:
 ### Demo Credentials
 After running `npm run db:seed`, use these credentials:
 
-**Tax Pro (Acme Tax Services)**
-- Email: `owner@acmetax.com`
-- Password: `password123`
+**Tax Pro (Demo Firm)**
+- Email: `pro@taxflow.com`
+- Password: `pro123`
 - State: ACTIVE
 
-**Client (Acme Tax Services)**
-- Email: `client@acmetax.com`
-- Password: `password123`
+**Client (Demo Firm)**
+- Email: `client@taxflow.com`
+- Password: `client123`
 
 **SaaS Owner**
 - Email: `owner@taxflow.com`

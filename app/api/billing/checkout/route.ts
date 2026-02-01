@@ -15,6 +15,14 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Tenant ID and Price ID required' }, { status: 400 });
         }
 
+        // Demo Mode Fallback for Billing
+        if (!process.env.STRIPE_SECRET_KEY) {
+            console.warn('Stripe not configured, simulated checkout successful');
+            return NextResponse.json({
+                url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/portal/settings/billing?success=true`
+            });
+        }
+
         const tenant = await prisma.tenant.findUnique({
             where: { id: tenantId }
         });
