@@ -83,6 +83,11 @@ async function main() {
 
     // Create a SAAS_OWNER user
     const ownerPasswordHash = await hashPassword('admin123');
+
+    // Associate with the first tenant created
+    const firstTenant = await prisma.tenant.findFirst();
+    if (!firstTenant) throw new Error('No tenants created');
+
     const saasOwner = await prisma.user.upsert({
         where: { email: 'owner@taxflow.com' },
         update: {},
@@ -92,7 +97,7 @@ async function main() {
             lastName: 'Owner',
             role: UserRole.SAAS_OWNER,
             passwordHash: ownerPasswordHash,
-            tenantId: tenants[0].email, // Associate with first tenant for now
+            tenantId: firstTenant.id,
         },
     });
 

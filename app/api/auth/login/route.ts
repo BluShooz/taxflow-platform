@@ -108,8 +108,12 @@ export async function POST(req: NextRequest) {
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
         });
-    } catch (error) {
+    } catch (error: any) {
         logger.error('Error in user login', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Internal server error',
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        }, { status: 500 });
     }
 }
