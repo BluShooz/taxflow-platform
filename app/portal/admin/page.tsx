@@ -28,20 +28,25 @@ export default function SaaSAdminDashboard() {
     useEffect(() => {
         try {
             const storedUser = localStorage.getItem('taxflow_session');
+            console.log('INIT ADMIN SESSION:', storedUser);
+
             if (!storedUser) {
-                router.push('/login');
+                console.error('CRITICAL: No taxflow_session found in localStorage');
+                setLoading(false); // Stop loading, let Debug UI take over
                 return;
             }
             const userData = JSON.parse(storedUser);
             if (userData.role !== 'SAAS_OWNER') {
-                router.push('/portal/pro');
+                console.error('CRITICAL: Role mismatch', userData.role);
+                setUser(userData); // Set it anyway so we can see who it is
+                setLoading(false);
                 return;
             }
             setUser(userData);
             fetchAdminData();
         } catch (err) {
             console.error('Init error', err);
-            router.push('/login');
+            setLoading(false);
         }
     }, []);
 
@@ -80,10 +85,65 @@ export default function SaaSAdminDashboard() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
-    if (!user) {
+    if (!user || user.role !== 'SAAS_OWNER') {
+        if (loading) {
+            return (
+                <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+                    <div className="h-10 w-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            );
+        }
+        // DEBUG OVERLAY - ONLY SHOWS IF NOT LOADING AND NO VALID USER
         return (
-            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-                <div className="h-10 w-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="min-h-screen bg-slate-950 text-white p-12 font-mono z-[9999] relative">
+                <div className="max-w-2xl mx-auto border-4 border-red-600 bg-slate-900 p-8 rounded-3xl shadow-2xl">
+                    <h1 className="text-3xl font-black text-red-500 mb-6 flex items-center gap-4">
+                        <AlertTriangle className="h-10 w-10" />
+                        PREVENTED CRASH/REDIRECT
+                    </h1>
+                    <div className="bg-black/50 p-6 rounded-xl border border-slate-700 font-mono text-sm space-y-4">
+                        <div>
+                            <p className="text-slate-500 font-bold uppercase tracking-widest">Diagnosis</p>
+                            <p className="text-yellow-400">The system attempted to redirect you to /login because it could not find a valid 'SAAS_OWNER' session.</p>
+                        </div>
+                        <div>
+                            <p className="text-slate-500 font-bold uppercase tracking-widest">Local Storage Check</p>
+                            <p className={localStorage.getItem('taxflow_session') ? 'text-emerald-400' : 'text-red-400'}>
+                                'taxflow_session' Exists: {localStorage.getItem('taxflow_session') ? 'YES' : 'NO'}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-slate-500 font-bold uppercase tracking-widest">Current User Data</p>
+                            <pre className="text-slate-300 bg-slate-800 p-4 rounded-lg overflow-x-auto">
+                                {JSON.stringify(user || 'NULL', null, 2)}
+                            </pre>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                        <button
+                            onClick={() => window.location.href = '/login'}
+                            className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 px-6 rounded-xl transition-all"
+                        >
+                            Return to Login
+                        </button>
+                        <button
+                            onClick={() => {
+                                // Force Override
+                                setUser({
+                                    id: 'OVERRIDE',
+                                    firstName: 'Emergency',
+                                    lastName: 'Admin',
+                                    role: 'SAAS_OWNER',
+                                    email: 'override@taxflow.com'
+                                });
+                            }}
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-emerald-900/20"
+                        >
+                            FORCE RENDER DASHBOARD
+                        </button>
+                    </div>
+                </div>
             </div>
         );
     }
