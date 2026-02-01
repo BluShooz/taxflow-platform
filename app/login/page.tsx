@@ -16,11 +16,7 @@ export default function LoginPage() {
         setLoading(true);
         setError(null);
 
-        console.log('🔵 Login button clicked!'); // DEBUG
-        console.log('Email:', email, 'Password:', password); // DEBUG
-
         try {
-            console.log('🔵 Sending login request...'); // DEBUG
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -28,7 +24,6 @@ export default function LoginPage() {
             });
 
             const data = await response.json();
-            console.log('🔵 Login response:', data); // DEBUG
 
             if (!response.ok) {
                 throw new Error(data.error || 'Login failed');
@@ -38,7 +33,6 @@ export default function LoginPage() {
             const isProduction = window.location.protocol === 'https:';
             const cookieString = `taxflow_token=${data.accessToken}; path=/; max-age=3600; SameSite=Lax${isProduction ? '; Secure' : ''}`;
             document.cookie = cookieString;
-            console.log('🔵 Cookie set:', cookieString); // DEBUG
 
             // Store user data in localStorage
             localStorage.setItem('taxflow_session', JSON.stringify({
@@ -46,10 +40,8 @@ export default function LoginPage() {
                 accessToken: data.accessToken,
                 refreshToken: data.refreshToken
             }));
-            console.log('🔵 LocalStorage updated'); // DEBUG
 
             // Redirect to appropriate portal
-            console.log('🔵 Redirecting to portal for role:', data.user.role); // DEBUG
             if (data.user.role === 'CLIENT') {
                 router.push('/portal/client');
             } else if (data.user.role === 'TAX_PRO') {
@@ -60,7 +52,6 @@ export default function LoginPage() {
                 setError('Role not recognized for portal entry.');
             }
         } catch (err: any) {
-            console.error('🔴 Login error:', err); // DEBUG
             setError(err.message);
         } finally {
             setLoading(false);
@@ -68,15 +59,8 @@ export default function LoginPage() {
     };
 
     const fillDemo = (e: string, p: string) => {
-        console.log('🔵 Demo button clicked:', e); // DEBUG
         setEmail(e);
         setPassword(p);
-    };
-
-    // Test button click
-    const testClick = () => {
-        console.log('🟢 TEST BUTTON WORKS!');
-        alert('Button click detected! JavaScript is working.');
     };
 
     return (
@@ -89,15 +73,6 @@ export default function LoginPage() {
                     <h1 className="text-3xl font-bold text-slate-900">Welcome Back</h1>
                     <p className="text-slate-500 mt-2 font-medium">Log in to your TaxFlow account</p>
                 </div>
-
-                {/* TEST BUTTON */}
-                <button
-                    onClick={testClick}
-                    type="button"
-                    className="w-full mb-4 px-6 py-3 bg-green-600 text-white rounded-2xl font-bold"
-                >
-                    🧪 TEST - Click Me First
-                </button>
 
                 <div className="glass-morphism p-8 rounded-3xl border-white/20 shadow-2xl">
                     <form onSubmit={handleLogin} className="space-y-6">
@@ -141,9 +116,6 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            onClick={(e) => {
-                                console.log('🟡 Button onClick fired!', e);
-                            }}
                             className="w-full bg-primary hover:bg-primary-hover text-white rounded-2xl py-4 font-bold shadow-xl shadow-primary/20 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                         >
                             {loading ? <Loader2 className="animate-spin h-5 w-5" /> : 'Log In to Dashboard'}
