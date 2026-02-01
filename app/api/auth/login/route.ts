@@ -82,13 +82,13 @@ export async function POST(req: NextRequest) {
         }
 
         // Generate tokens
-        const tokens = await generateTokenPair({
+        const tokens = (await generateTokenPair({
             userId: user.id,
             email: user.email,
             role: user.role,
             tenantId: user.tenantId,
             tenantState: user.tenant.state,
-        });
+        })) as any;
 
         // Store refresh token & Audit log (only if not in demo mode)
         if (!isDemoMode && user.id.startsWith('user_') === false) {

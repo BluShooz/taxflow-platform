@@ -52,13 +52,13 @@ export async function POST(req: NextRequest) {
         });
 
         // Generate tokens
-        const tokens = generateTokenPair({
+        const tokens = (await generateTokenPair({
             userId: user.id,
             email: user.email,
             role: user.role,
             tenantId: user.tenantId,
             tenantState: user.tenant.state,
-        });
+        })) as any;
 
         // Store refresh token
         await prisma.user.update({

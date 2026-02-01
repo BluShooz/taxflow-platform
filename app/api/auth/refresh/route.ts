@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Verify refresh token
-        const payload = verifyRefreshToken(refreshToken);
+        const payload = (await verifyRefreshToken(refreshToken)) as any;
 
         if (!payload) {
             return NextResponse.json({ error: 'Invalid refresh token' }, { status: 401 });
@@ -40,14 +40,14 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Refresh token expired' }, { status: 401 });
         }
 
-        // Generate new tokens
-        const tokens = generateTokenPair({
+        // Generate tokens
+        const tokens = (await generateTokenPair({
             userId: user.id,
             email: user.email,
             role: user.role,
             tenantId: user.tenantId,
             tenantState: user.tenant.state,
-        });
+        })) as any;
 
         // Update refresh token in database
         await prisma.user.update({
