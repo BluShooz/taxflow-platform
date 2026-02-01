@@ -1,5 +1,4 @@
-// @ts-ignore
-const { authenticator } = require('otplib');
+import { authenticator } from '@otplib/preset-default';
 import QRCode from 'qrcode';
 
 export interface MFASetup {
