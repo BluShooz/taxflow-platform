@@ -29,6 +29,9 @@ export default function LoginPage() {
                 throw new Error(data.error || 'Login failed');
             }
 
+            // Set cookie for middleware
+            document.cookie = `taxflow_token=${data.accessToken}; path=/; max-age=3600; SameSite=Lax`;
+
             // Store user data in localStorage for the "battle test"
             localStorage.setItem('taxflow_session', JSON.stringify({
                 ...data.user,
@@ -39,8 +42,12 @@ export default function LoginPage() {
             // Redirect to appropriate portal
             if (data.user.role === 'CLIENT') {
                 router.push('/portal/client');
+            } else if (data.user.role === 'TAX_PRO') {
+                router.push('/portal/pro');
+            } else if (data.user.role === 'SAAS_OWNER') {
+                router.push('/portal/admin');
             } else {
-                setError('Only client portal is currently active in this build.');
+                setError('Role not recognized for portal entry.');
             }
         } catch (err: any) {
             setError(err.message);
@@ -109,11 +116,22 @@ export default function LoginPage() {
                     </form>
 
                     <div className="mt-8 pt-8 border-t border-slate-200 text-center">
-                        <p className="text-sm text-slate-500 mb-4">Demo Credentials</p>
-                        <div className="grid grid-cols-1 gap-2">
-                            <div className="bg-slate-100 p-3 rounded-xl text-xs font-mono text-left">
-                                <p className="text-primary font-bold">Email: client@acmetax.com</p>
-                                <p className="text-slate-500">Pass: password123</p>
+                        <p className="text-sm text-slate-500 mb-4 tracking-tighter uppercase font-black">Platform Interrogation Access</p>
+                        <div className="grid grid-cols-1 gap-3">
+                            <div className="bg-slate-50 p-3 rounded-2xl text-[10px] font-mono text-left border border-slate-100 flex items-center justify-between">
+                                <div>
+                                    <p className="text-primary font-bold">CLIENT: client@acmetax.com</p>
+                                    <p className="text-slate-400">Pass: password123</p>
+                                </div>
+                                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                            </div>
+                            <div className="bg-slate-50 p-3 rounded-2xl text-[10px] font-mono text-left border border-slate-100">
+                                <p className="text-purple-600 font-bold">TAX PRO: owner@acmetax.com</p>
+                                <p className="text-slate-400">Pass: password123</p>
+                            </div>
+                            <div className="bg-slate-50 p-3 rounded-2xl text-[10px] font-mono text-left border border-slate-100">
+                                <p className="text-slate-900 font-bold">SAAS OWNER: owner@taxflow.com</p>
+                                <p className="text-slate-400">Pass: admin123</p>
                             </div>
                         </div>
                     </div>
