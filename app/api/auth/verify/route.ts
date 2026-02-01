@@ -4,7 +4,7 @@ import { jwtVerify } from 'jose';
 export const dynamic = 'force-dynamic';
 
 const JWT_ACCESS_SECRET = new TextEncoder().encode(
-    process.env.JWT_ACCESS_SECRET || 'fallback-secret-12345678'
+    'emergency-hardcoded-secret-fix-2026-middleware'
 );
 
 export async function GET(req: NextRequest) {

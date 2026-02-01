@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 // @ts-ignore
 import { UserRole, TenantState } from '@prisma/client';
 
-const JWT_ACCESS_SECRET = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET || 'fallback-secret-12345678');
+const JWT_ACCESS_SECRET = new TextEncoder().encode('emergency-hardcoded-secret-fix-2026-middleware');
 const JWT_REFRESH_SECRET = new TextEncoder().encode(process.env.JWT_REFRESH_SECRET || 'fallback-refresh-secret-12345678');
 const JWT_ACCESS_EXPIRY = process.env.JWT_ACCESS_EXPIRY || '15m';
 const JWT_REFRESH_EXPIRY = process.env.JWT_REFRESH_EXPIRY || '7d';
