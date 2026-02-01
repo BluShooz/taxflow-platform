@@ -75,7 +75,7 @@ export default function LoginPage() {
                 </div>
 
                 <div className="glass-morphism p-8 rounded-3xl border-white/20 shadow-2xl">
-                    <form onSubmit={handleLogin} className="space-y-6">
+                    <div className="space-y-6">
                         <div className="space-y-2">
                             <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Email Address</label>
                             <div className="relative group">
@@ -99,6 +99,7 @@ export default function LoginPage() {
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleLogin(e as any)}
                                     placeholder="••••••••"
                                     className="w-full bg-white/50 border border-slate-200 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     required
@@ -114,13 +115,21 @@ export default function LoginPage() {
                         )}
 
                         <button
-                            type="submit"
+                            type="button"
+                            onClick={handleLogin}
                             disabled={loading}
                             className="w-full bg-primary hover:bg-primary-hover text-white rounded-2xl py-4 font-bold shadow-xl shadow-primary/20 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                         >
-                            {loading ? <Loader2 className="animate-spin h-5 w-5" /> : 'Log In to Dashboard'}
+                            {loading ? (
+                                <span className="flex items-center gap-2">
+                                    <Loader2 className="animate-spin h-5 w-5" />
+                                    Logging in...
+                                </span>
+                            ) : (
+                                'Log In to Dashboard'
+                            )}
                         </button>
-                    </form>
+                    </div>
 
                     <div className="mt-8 pt-8 border-t border-slate-200 text-center">
                         <p className="text-sm text-slate-500 mb-4 tracking-tighter uppercase font-black">Platform Interrogation Access</p>
