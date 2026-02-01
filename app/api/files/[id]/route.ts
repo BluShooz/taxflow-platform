@@ -5,10 +5,10 @@ import { logger } from '@/backend/utils/logger';
 // DELETE /api/files/[id]
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const fileId = params.id;
+        const { id: fileId } = await params;
         const userId = req.nextUrl.searchParams.get('userId');
 
         if (!userId) {

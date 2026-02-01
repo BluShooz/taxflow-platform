@@ -7,10 +7,10 @@ import { logger } from '@/backend/utils/logger';
 // GET /api/tenant/[id]
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const tenantId = params.id;
+        const { id: tenantId } = await params;
 
         const tenant = await prisma.tenant.findUnique({
             where: { id: tenantId },
@@ -50,10 +50,10 @@ export async function GET(
 // PATCH /api/tenant/[id]/state
 export async function PATCH(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const tenantId = params.id;
+        const { id: tenantId } = await params;
         const body = await req.json();
         const validation = tenantStateTransitionSchema.safeParse(body);
 

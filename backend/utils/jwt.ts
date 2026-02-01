@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+// @ts-ignore
 import { UserRole, TenantState } from '@prisma/client';
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'fallback-secret';
@@ -23,14 +24,14 @@ export interface TokenPair {
 // Generate access token
 export function generateAccessToken(payload: JWTPayload): string {
     return jwt.sign(payload, JWT_ACCESS_SECRET, {
-        expiresIn: JWT_ACCESS_EXPIRY,
+        expiresIn: JWT_ACCESS_EXPIRY as any,
     });
 }
 
 // Generate refresh token
 export function generateRefreshToken(payload: JWTPayload): string {
     return jwt.sign(payload, JWT_REFRESH_SECRET, {
-        expiresIn: JWT_REFRESH_EXPIRY,
+        expiresIn: JWT_REFRESH_EXPIRY as any,
     });
 }
 

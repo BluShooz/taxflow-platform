@@ -4,7 +4,8 @@ import { hashPassword, comparePassword, generateTokenPair, verifyRefreshToken, g
 import { setupMFA, verifyMFAToken } from '@/backend/utils/mfa';
 import { registerSchema, loginSchema } from '@/backend/utils/validators';
 import { logger } from '@/backend/utils/logger';
-import { AuditAction } from '@prisma/client';
+import { $Enums } from '@prisma/client';
+const AuditAction = $Enums.AuditAction;
 
 // POST /api/auth/register
 export async function POST(req: NextRequest) {
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
 
         if (!validation.success) {
             return NextResponse.json(
-                { error: 'Validation failed', details: validation.error.errors },
+                { error: 'Validation failed', details: validation.error.issues },
                 { status: 400 }
             );
         }
