@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { setupMFA, verifyMFAToken } from '@/backend/utils/mfa';
 import prisma from '@/backend/config/dbConfig';
 import { logger } from '@/backend/utils/logger';

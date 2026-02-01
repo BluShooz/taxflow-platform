@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { getPresignedDownloadUrl } from '@/backend/services/fileService';
 import { logger } from '@/backend/utils/logger';
 

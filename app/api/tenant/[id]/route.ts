@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/backend/config/dbConfig';
+
+export const dynamic = 'force-dynamic';
 import { transitionTenantState } from '@/backend/services/lifecycle';
 import { tenantStateTransitionSchema } from '@/backend/utils/validators';
 import { logger } from '@/backend/utils/logger';

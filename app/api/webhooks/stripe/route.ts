@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
+
+export const dynamic = 'force-dynamic';
 import stripe, { stripeConfig } from '@/backend/config/stripeConfig';
 import { handleWebhookEvent } from '@/backend/services/billingService';
 import { logger } from '@/backend/utils/logger';
 import prisma from '@/backend/config/dbConfig';
-import { AuditAction } from '@prisma/client';
+
+// Enum workaround
+const AuditAction = {
+    SUBSCRIPTION_UPDATED: 'SUBSCRIPTION_UPDATED' as any,
+} as const;
 
 // POST /api/webhooks/stripe
 export async function POST(req: NextRequest) {

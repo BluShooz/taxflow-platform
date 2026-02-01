@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/backend/config/dbConfig';
+
+export const dynamic = 'force-dynamic';
 import { verifyRefreshToken, generateTokenPair, getRefreshTokenExpiry } from '@/backend/utils/jwt';
 import { logger } from '@/backend/utils/logger';
 

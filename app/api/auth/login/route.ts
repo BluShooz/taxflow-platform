@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/backend/config/dbConfig';
+
+export const dynamic = 'force-dynamic';
 import { comparePassword, generateTokenPair, getRefreshTokenExpiry } from '@/backend/utils/jwt';
 import { verifyMFAToken } from '@/backend/utils/mfa';
 import { loginSchema } from '@/backend/utils/validators';
 import { logger } from '@/backend/utils/logger';
-import { AuditAction } from '@prisma/client';
+// Enum workarounds for build stability
+const AuditAction = {
+    USER_LOGIN: 'USER_LOGIN' as any,
+    USER_LOGOUT: 'USER_LOGOUT' as any,
+} as const;
 
 // POST /api/auth/login
 export async function POST(req: NextRequest) {

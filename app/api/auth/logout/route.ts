@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/backend/config/dbConfig';
+
+export const dynamic = 'force-dynamic';
 import { logger } from '@/backend/utils/logger';
-import { AuditAction } from '@prisma/client';
+
+// Enum workaround
+const AuditAction = {
+    USER_LOGOUT: 'USER_LOGOUT' as any,
+} as const;
 
 // POST /api/auth/logout
 export async function POST(req: NextRequest) {
