@@ -25,34 +25,47 @@ export default function SaaSAdminDashboard() {
     const router = useRouter();
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('taxflow_session');
-        if (!storedUser) {
-            router.push('/login');
-            return;
+        try {
+            const storedUser = localStorage.getItem('taxflow_session');
+            if (!storedUser) {
+                console.log('No session found, redirecting to login');
+                router.push('/login');
+                return;
+            }
+            try {
+                const userData = JSON.parse(storedUser);
+                if (userData.role !== 'SAAS_OWNER') {
+                    router.push('/portal/pro');
+                    return;
+                }
+                setUser(userData);
+                fetchAdminData();
+            } catch (e) {
+                console.error('JSON Parse error', e);
+                localStorage.removeItem('taxflow_session');
+                router.push('/login');
+            }
+        } catch (err) {
+            console.error('Critical initialization error', err);
         }
-        const userData = JSON.parse(storedUser);
-        if (userData.role !== 'SAAS_OWNER') {
-            router.push('/portal/pro'); // Fallback if they are a Pro
-            return;
-        }
-        setUser(userData);
-        fetchAdminData();
     }, []);
 
     const fetchAdminData = async () => {
         try {
             const [statsRes, tenantsRes] = await Promise.all([
-                fetch('/api/admin/stats'),
-                fetch('/api/admin/tenants')
+                fetch('/api/admin/stats').catch(e => ({ ok: false, json: async () => ({}) } as any)),
+                fetch('/api/admin/tenants').catch(e => ({ ok: false, json: async () => ({ tenants: [] }) } as any))
             ]);
 
-            const statsData = await statsRes.json();
-            const tenantsData = await tenantsRes.json();
+            const statsData = statsRes.ok ? await statsRes.json() : {};
+            const tenantsData = tenantsRes.ok ? await tenantsRes.json() : { tenants: [] };
 
-            setStats(statsData);
+            setStats(statsData || {});
             setTenants(tenantsData.tenants || []);
         } catch (error) {
             console.error('Error fetching admin data:', error);
+            setStats({});
+            setTenants([]);
         } finally {
             setLoading(false);
         }
@@ -204,8 +217,8 @@ export default function SaaSAdminDashboard() {
                                                     </td>
                                                     <td className="px-8 py-6">
                                                         <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${tenant.state === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                                                                tenant.state === 'TRIAL' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
-                                                                    'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+                                                            tenant.state === 'TRIAL' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                                                                'bg-orange-500/10 text-orange-400 border border-orange-500/20'
                                                             }`}>
                                                             {tenant.state}
                                                         </span>
@@ -267,8 +280,8 @@ export default function SaaSAdminDashboard() {
 function AdminNavItem({ icon, label, active = false, badge }: any) {
     return (
         <a href="#" className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all ${active
-                ? 'bg-primary text-white shadow-xl shadow-primary/20'
-                : 'text-slate-500 hover:bg-slate-800 hover:text-slate-100'
+            ? 'bg-primary text-white shadow-xl shadow-primary/20'
+            : 'text-slate-500 hover:bg-slate-800 hover:text-slate-100'
             }`}>
             {icon}
             <span className="font-bold text-sm tracking-tight flex-1">{label}</span>
