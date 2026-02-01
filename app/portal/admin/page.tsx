@@ -150,8 +150,8 @@ export default function SaaSAdminDashboard() {
                 </header>
 
                 <div className="p-4 md:p-12 space-y-12">
-                    {/* Platform KPIs */}
-                    <CrashGuard name="KPI Grid">
+                    <CrashGuard name="Full Dashboard Content" fallback={<div className="p-10 text-center"><p className="text-slate-500">Dashboard loading failed. <button onClick={() => window.location.reload()} className="text-primary underline">Retry</button></p></div>}>
+                        {/* Platform KPIs */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                             <AdminKpiCard
                                 label="Active Tenants"
@@ -177,12 +177,10 @@ export default function SaaSAdminDashboard() {
                                 icon={<ShieldCheck />}
                             />
                         </div>
-                    </CrashGuard>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                        {/* Tenant Registry */}
-                        <div className="lg:col-span-2 space-y-6">
-                            <CrashGuard name="Tenant Registry">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mt-12">
+                            {/* Tenant Registry */}
+                            <div className="lg:col-span-2 space-y-6">
                                 <div className="bg-slate-900 rounded-3xl border border-slate-800 shadow-2xl shadow-black/50 overflow-hidden">
                                     <div className="p-8 border-b border-slate-800 flex items-center justify-between">
                                         <h3 className="text-xl font-bold flex items-center gap-3">
@@ -242,12 +240,10 @@ export default function SaaSAdminDashboard() {
                                         </table>
                                     </div>
                                 </div>
-                            </CrashGuard>
-                        </div>
+                            </div>
 
-                        {/* Recent Activity Stream */}
-                        <div className="lg:col-span-1 space-y-6">
-                            <CrashGuard name="Activity Stream">
+                            {/* Recent Activity Stream */}
+                            <div className="lg:col-span-1 space-y-6">
                                 <div className="bg-slate-900 rounded-3xl border border-slate-800 shadow-2xl p-8 h-full">
                                     <div className="flex items-center gap-3 mb-10">
                                         <div className="bg-primary/20 p-2 rounded-lg">
@@ -277,9 +273,9 @@ export default function SaaSAdminDashboard() {
                                         Analyze Full Audit History
                                     </button>
                                 </div>
-                            </CrashGuard>
+                            </div>
                         </div>
-                    </div>
+                    </CrashGuard>
                 </div>
             </main>
         </div>
