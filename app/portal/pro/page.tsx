@@ -54,10 +54,10 @@ export default function ProDashboard() {
                     </div>
 
                     <nav className="space-y-1">
-                        <NavItem icon={<Briefcase size={18} />} label="Workspace" active />
-                        <NavItem icon={<Users size={18} />} label="Clients" />
-                        <NavItem icon={<FileCheck size={18} />} label="Returns" badge="12" />
-                        <NavItem icon={<Calendar size={18} />} label="Schedule" />
+                        <NavItem href="/portal/pro" icon={<Briefcase size={18} />} label="Workspace" active />
+                        <NavItem href="/portal/pro/clients" icon={<Users size={18} />} label="Clients" />
+                        <NavItem href="/portal/pro/returns" icon={<FileCheck size={18} />} label="Returns" badge="12" />
+                        <NavItem href="/portal/pro/schedule" icon={<Calendar size={18} />} label="Schedule" />
                     </nav>
                 </div>
 
@@ -125,9 +125,9 @@ export default function ProDashboard() {
     );
 }
 
-function NavItem({ icon, label, active, badge }: any) {
+function NavItem({ icon, label, active, badge, href }: any) {
     return (
-        <a href="#" className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${active ? 'bg-purple-600/20 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}`}>
+        <a href={href || '#'} className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${active ? 'bg-purple-600/20 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}`}>
             {icon}
             <span className="text-sm font-medium">{label}</span>
             {badge && <span className="ml-auto bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{badge}</span>}

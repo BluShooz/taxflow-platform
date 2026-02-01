@@ -55,11 +55,11 @@ export default function ClientDashboard() {
                     </div>
 
                     <nav className="space-y-1">
-                        <NavItem icon={<LayoutDashboard size={18} />} label="Overview" active />
-                        <NavItem icon={<FileText size={18} />} label="My Documents" />
-                        <NavItem icon={<UploadCloud size={18} />} label="Upload Center" />
-                        <NavItem icon={<MessageSquare size={18} />} label="Messages" badge="2" />
-                        <NavItem icon={<Settings size={18} />} label="Settings" />
+                        <NavItem href="/portal/client" icon={<LayoutDashboard size={18} />} label="Overview" active />
+                        <NavItem href="/portal/client/documents" icon={<FileText size={18} />} label="My Documents" />
+                        <NavItem href="/portal/client/upload" icon={<UploadCloud size={18} />} label="Upload Center" />
+                        <NavItem href="/portal/client/messages" icon={<MessageSquare size={18} />} label="Messages" badge="2" />
+                        <NavItem href="/portal/client/settings" icon={<Settings size={18} />} label="Settings" />
                     </nav>
                 </div>
 
@@ -126,9 +126,9 @@ export default function ClientDashboard() {
     );
 }
 
-function NavItem({ icon, label, active, badge }: any) {
+function NavItem({ icon, label, active, badge, href }: any) {
     return (
-        <a href="#" className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${active ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-50'}`}>
+        <a href={href || '#'} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${active ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-50'}`}>
             {icon}
             <span className="text-sm">{label}</span>
             {badge && <span className="ml-auto bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full">{badge}</span>}
