@@ -91,63 +91,67 @@ export default function SaaSAdminDashboard() {
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 flex font-sans">
             {/* Dark Sidebar */}
-            <aside className="w-72 bg-slate-900 border-r border-slate-800 flex flex-col fixed h-full z-20 hidden md:flex">
-                <div className="p-8 flex items-center gap-3">
-                    <div className="bg-primary h-10 w-10 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-                        <Server className="text-white h-6 w-6" />
-                    </div>
-                    <div>
-                        <span className="text-xl font-black tracking-tight block">TaxFlow<span className="text-primary">Admin</span></span>
-                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Platform Engine</span>
-                    </div>
-                </div>
-
-                <nav className="flex-1 px-4 space-y-1 mt-6">
-                    <AdminNavItem icon={<BarChart3 size={20} />} label="Global Overview" active />
-                    <AdminNavItem icon={<Building2 size={20} />} label="Tenant Management" badge={tenants?.length?.toString() || '0'} />
-                    <AdminNavItem icon={<Activity size={20} />} label="System Audit" />
-                    <AdminNavItem icon={<ShieldCheck size={20} />} label="Security Policies" />
-                    <AdminNavItem icon={<Globe size={20} />} label="Global Settings" />
-                </nav>
-
-                <div className="p-6 border-t border-slate-800">
-                    <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-red-400/10 w-full rounded-xl transition-all"
-                    >
-                        <LogOut size={20} />
-                        <span className="font-bold text-sm">System Shutdown</span>
-                    </button>
-                    <div className="mt-6 flex items-center gap-3 p-3 bg-slate-800/50 rounded-2xl border border-slate-700/50">
-                        <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold">
-                            {user.firstName?.[0] || 'U'}
+            <CrashGuard name="Sidebar" fallback={<div className="w-72 bg-slate-900 border-r border-slate-800 hidden md:flex items-center justify-center">Sidebar Error</div>}>
+                <aside className="w-72 bg-slate-900 border-r border-slate-800 flex flex-col fixed h-full z-20 hidden md:flex">
+                    <div className="p-8 flex items-center gap-3">
+                        <div className="bg-primary h-10 w-10 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                            <Server className="text-white h-6 w-6" />
                         </div>
-                        <div className="flex-1 overflow-hidden">
-                            <p className="text-xs font-bold truncate">{user.firstName} {user.lastName}</p>
-                            <p className="text-[10px] text-slate-500 font-medium">Platform Admin</p>
+                        <div>
+                            <span className="text-xl font-black tracking-tight block">TaxFlow<span className="text-primary">Admin</span></span>
+                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Platform Engine</span>
                         </div>
                     </div>
-                </div>
-            </aside>
+
+                    <nav className="flex-1 px-4 space-y-1 mt-6">
+                        <AdminNavItem icon={<BarChart3 size={20} />} label="Global Overview" active />
+                        <AdminNavItem icon={<Building2 size={20} />} label="Tenant Management" badge={tenants?.length?.toString() || '0'} />
+                        <AdminNavItem icon={<Activity size={20} />} label="System Audit" />
+                        <AdminNavItem icon={<ShieldCheck size={20} />} label="Security Policies" />
+                        <AdminNavItem icon={<Globe size={20} />} label="Global Settings" />
+                    </nav>
+
+                    <div className="p-6 border-t border-slate-800">
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-red-400/10 w-full rounded-xl transition-all"
+                        >
+                            <LogOut size={20} />
+                            <span className="font-bold text-sm">System Shutdown</span>
+                        </button>
+                        <div className="mt-6 flex items-center gap-3 p-3 bg-slate-800/50 rounded-2xl border border-slate-700/50">
+                            <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold">
+                                {user?.firstName?.[0] || 'U'}
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                                <p className="text-xs font-bold truncate">{user?.firstName || 'Admin'} {user?.lastName || 'User'}</p>
+                                <p className="text-[10px] text-slate-500 font-medium">Platform Admin</p>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </CrashGuard>
 
             {/* Main Content Area */}
             <main className="flex-1 md:ml-72">
-                <header className="bg-slate-950/50 backdrop-blur-xl px-4 md:px-12 py-6 flex items-center justify-between sticky top-0 z-10 border-b border-white/5">
-                    <div className="hidden md:flex items-center gap-6 bg-slate-900 px-5 py-2.5 rounded-2xl w-full max-w-xl border border-slate-800 focus-within:border-primary/50 transition-colors">
-                        <Search size={20} className="text-slate-500" />
-                        <input
-                            type="text"
-                            placeholder="Interrogate system logs or tenant IDs..."
-                            className="bg-transparent border-none outline-none text-sm w-full text-slate-200 placeholder:text-slate-600"
-                        />
-                    </div>
-                    <div className="flex items-center gap-6 ml-auto">
-                        <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl text-xs font-black uppercase tracking-tighter">
-                            <ShieldCheck size={16} />
-                            ROOT ACCESS
+                <CrashGuard name="Header" fallback={<div className="h-20 bg-slate-900 border-b border-slate-800"></div>}>
+                    <header className="bg-slate-950/50 backdrop-blur-xl px-4 md:px-12 py-6 flex items-center justify-between sticky top-0 z-10 border-b border-white/5">
+                        <div className="hidden md:flex items-center gap-6 bg-slate-900 px-5 py-2.5 rounded-2xl w-full max-w-xl border border-slate-800 focus-within:border-primary/50 transition-colors">
+                            <Search size={20} className="text-slate-500" />
+                            <input
+                                type="text"
+                                placeholder="Interrogate system logs or tenant IDs..."
+                                className="bg-transparent border-none outline-none text-sm w-full text-slate-200 placeholder:text-slate-600"
+                            />
                         </div>
-                    </div>
-                </header>
+                        <div className="flex items-center gap-6 ml-auto">
+                            <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-xl text-xs font-black uppercase tracking-tighter">
+                                <ShieldCheck size={16} />
+                                ROOT ACCESS
+                            </div>
+                        </div>
+                    </header>
+                </CrashGuard>
 
                 <div className="p-4 md:p-12 space-y-12">
                     <CrashGuard name="Full Dashboard Content" fallback={<div className="p-10 text-center"><p className="text-slate-500">Dashboard loading failed. <button onClick={() => window.location.reload()} className="text-primary underline">Retry</button></p></div>}>
