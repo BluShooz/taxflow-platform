@@ -2,7 +2,7 @@
 
 **Production-ready, multi-tenant SaaS platform for tax professionals** with lifecycle management, Stripe billing, file management, and chaos-proof tenant isolation.
 
-### 🌐 Live Demo: [taxflow-platform.vercel.app](https://taxflow-platform-e4ti1frca-jon-smiths-projects-a3dfc292.vercel.app)
+### 🌐 Live Demo: [taxflow-platform.vercel.app](https://taxflow-platform.vercel.app)
 
 > [!TIP]
 > **Zero-Config Demo Mode**: This application features a "Demo Mode" fallback. If you deploy it to Vercel without a database or API keys, the UI will still work perfectly using the demo credentials below.
