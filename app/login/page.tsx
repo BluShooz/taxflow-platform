@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { LogIn, Mail, Lock, AlertCircle, Loader2, Link as LinkIcon } from 'lucide-react';
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('client@acmetax.com');
-    const [password, setPassword] = useState('password123');
+    const [email, setEmail] = useState('owner@taxflow.com');
+    const [password, setPassword] = useState('admin123');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
@@ -54,6 +54,11 @@ export default function LoginPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const fillDemo = (e: string, p: string) => {
+        setEmail(e);
+        setPassword(p);
     };
 
     return (
@@ -118,21 +123,30 @@ export default function LoginPage() {
                     <div className="mt-8 pt-8 border-t border-slate-200 text-center">
                         <p className="text-sm text-slate-500 mb-4 tracking-tighter uppercase font-black">Platform Interrogation Access</p>
                         <div className="grid grid-cols-1 gap-3">
-                            <div className="bg-slate-50 p-3 rounded-2xl text-[10px] font-mono text-left border border-slate-100 flex items-center justify-between">
+                            <button
+                                onClick={() => fillDemo('client@taxflow.com', 'client123')}
+                                className="bg-slate-50 p-3 rounded-2xl text-[10px] font-mono text-left border border-slate-100 flex items-center justify-between hover:bg-slate-100 transition-colors"
+                            >
                                 <div>
-                                    <p className="text-primary font-bold">CLIENT: client@acmetax.com</p>
-                                    <p className="text-slate-400">Pass: password123</p>
+                                    <p className="text-primary font-bold">CLIENT: client@taxflow.com</p>
+                                    <p className="text-slate-400">Pass: client123</p>
                                 </div>
                                 <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                            </div>
-                            <div className="bg-slate-50 p-3 rounded-2xl text-[10px] font-mono text-left border border-slate-100">
-                                <p className="text-purple-600 font-bold">TAX PRO: owner@acmetax.com</p>
-                                <p className="text-slate-400">Pass: password123</p>
-                            </div>
-                            <div className="bg-slate-50 p-3 rounded-2xl text-[10px] font-mono text-left border border-slate-100">
+                            </button>
+                            <button
+                                onClick={() => fillDemo('pro@taxflow.com', 'pro123')}
+                                className="bg-slate-50 p-3 rounded-2xl text-[10px] font-mono text-left border border-slate-100 hover:bg-slate-100 transition-colors"
+                            >
+                                <p className="text-purple-600 font-bold">TAX PRO: pro@taxflow.com</p>
+                                <p className="text-slate-400">Pass: pro123</p>
+                            </button>
+                            <button
+                                onClick={() => fillDemo('owner@taxflow.com', 'admin123')}
+                                className="bg-slate-50 p-3 rounded-2xl text-[10px] font-mono text-left border border-slate-100 hover:bg-slate-100 transition-colors"
+                            >
                                 <p className="text-slate-900 font-bold">SAAS OWNER: owner@taxflow.com</p>
                                 <p className="text-slate-400">Pass: admin123</p>
-                            </div>
+                            </button>
                         </div>
                     </div>
                 </div>

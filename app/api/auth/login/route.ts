@@ -43,8 +43,9 @@ export async function POST(req: NextRequest) {
 
         // Demo Mode Fallback
         if (!user || isDemoMode) {
-            const { DEMO_USERS } = require('@/backend/utils/demoData');
-            const demoUser = DEMO_USERS.find((u: any) => u.email === email && u.password === password);
+            // Use relative path for require to ensure it works in all environments
+            const demoData = require('../../../backend/utils/demoData');
+            const demoUser = demoData.DEMO_USERS.find((u: any) => u.email === email && u.password === password);
 
             if (demoUser) {
                 user = {
