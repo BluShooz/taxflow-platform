@@ -1,4 +1,5 @@
-import { authenticator } from 'otplib';
+import * as otplib from 'otplib';
+const { authenticator } = otplib;
 import QRCode from 'qrcode';
 
 export interface MFASetup {

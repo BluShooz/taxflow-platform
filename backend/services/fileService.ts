@@ -1,5 +1,6 @@
 import { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import * as s3RequestPresigner from '@aws-sdk/s3-request-presigner';
+const { getSignedUrl } = s3RequestPresigner;
 import { s3Client, s3Config } from '../config/s3Config';
 import prisma from '../config/dbConfig';
 import { logger } from '../utils/logger';

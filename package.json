@@ -31,10 +31,12 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@aws-sdk/s3-request-presigner": "^3.980.0",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.19.30",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
