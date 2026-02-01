@@ -1,0 +1,192 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TenantState {
+  TRIAL
+  ACTIVE
+  GRACE_PERIOD
+  SUSPENDED
+  ARCHIVED
+}
+
+enum UserRole {
+  CLIENT
+  TAX_PRO
+  ADMIN
+  SAAS_OWNER
+}
+
+enum AuditAction {
+  TENANT_STATE_CHANGE
+  USER_LOGIN
+  USER_LOGOUT
+  FILE_UPLOAD
+  FILE_DOWNLOAD
+  FILE_DELETE
+  SUBSCRIPTION_CREATED
+  SUBSCRIPTION_UPDATED
+  SUBSCRIPTION_CANCELED
+  PAYMENT_FAILED
+  PAYMENT_SUCCEEDED
+}
+
+model Tenant {
+  id                    String        @id @default(cuid())
+  name                  String
+  email                 String        @unique
+  state                 TenantState   @default(TRIAL)
+  
+  // Stripe billing
+  stripeCustomerId      String?       @unique
+  stripeSubscriptionId  String?       @unique
+  stripePriceId         String?
+  subscriptionStatus    String?
+  
+  // Lifecycle timestamps
+  trialEndsAt           DateTime?
+  gracePeriodStartedAt  DateTime?
+  suspendedAt           DateTime?
+  archivedAt            DateTime?
+  
+  // White-label branding
+  logoUrl               String?
+  primaryColor          String?       @default("#3B82F6")
+  customDomain          String?       @unique
+  subdomain             String?       @unique
+  
+  // Feature flags
+  maxClients            Int           @default(5)
+  maxStorageGB          Int           @default(10)
+  enableMFA             Boolean       @default(false)
+  
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  
+  // Relations
+  users                 User[]
+  files                 File[]
+  auditLogs             AuditLog[]
+  
+  @@index([state])
+  @@index([stripeCustomerId])
+  @@index([customDomain])
+  @@index([subdomain])
+}
+
+model User {
+  id                String      @id @default(cuid())
+  email             String      @unique
+  passwordHash      String
+  firstName         String
+  lastName          String
+  role              UserRole    @default(CLIENT)
+  
+  // MFA
+  mfaEnabled        Boolean     @default(false)
+  mfaSecret         String?
+  
+  // JWT refresh tokens
+  refreshToken      String?     @unique
+  refreshTokenExp   DateTime?
+  
+  // Tenant relationship
+  tenantId          String
+  tenant            Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  // Metadata
+  lastLoginAt       DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  // Relations
+  uploadedFiles     File[]
+  auditLogs         AuditLog[]
+  
+  @@index([tenantId])
+  @@index([email])
+  @@index([role])
+}
+
+model File {
+  id                String      @id @default(cuid())
+  
+  // S3 storage
+  s3Key             String      @unique
+  s3Bucket          String
+  
+  // File metadata
+  originalName      String
+  mimeType          String
+  sizeBytes         BigInt
+  
+  // Retention policy
+  retentionDays     Int         @default(2555) // ~7 years default
+  expiresAt         DateTime?
+  
+  // Tenant and user
+  tenantId          String
+  tenant            Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  uploadedById      String
+  uploadedBy        User        @relation(fields: [uploadedById], references: [id])
+  
+  // Timestamps
+  uploadedAt        DateTime    @default(now())
+  lastAccessedAt    DateTime?
+  deletedAt         DateTime?   // Soft delete
+  
+  // Relations
+  auditLogs         AuditLog[]
+  
+  @@index([tenantId])
+  @@index([uploadedById])
+  @@index([expiresAt])
+  @@index([deletedAt])
+}
+
+model AuditLog {
+  id                String        @id @default(cuid())
+  
+  action            AuditAction
+  
+  // Actor
+  userId            String?
+  user              User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Tenant context
+  tenantId          String?
+  tenant            Tenant?       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  // Resource
+  resourceType      String?       // "tenant", "file", "user", "subscription"
+  resourceId        String?
+  fileId            String?
+  file              File?         @relation(fields: [fileId], references: [id], onDelete: SetNull)
+  
+  // State snapshots
+  beforeState       Json?
+  afterState        Json?
+  
+  // Request metadata
+  ipAddress         String?
+  userAgent         String?
+  
+  // Additional context
+  metadata          Json?
+  
+  createdAt         DateTime      @default(now())
+  
+  @@index([tenantId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
