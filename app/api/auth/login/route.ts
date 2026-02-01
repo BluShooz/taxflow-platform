@@ -6,6 +6,8 @@ import { comparePassword, generateTokenPair, getRefreshTokenExpiry } from '@/bac
 import { verifyMFAToken } from '@/backend/utils/mfa';
 import { loginSchema } from '@/backend/utils/validators';
 import { logger } from '@/backend/utils/logger';
+import { DEMO_USERS } from '@/backend/utils/demoData';
+
 // Enum workarounds for build stability
 const AuditAction = {
     USER_LOGIN: 'USER_LOGIN' as any,
@@ -37,15 +39,13 @@ export async function POST(req: NextRequest) {
                 include: { tenant: true },
             });
         } catch (dbError) {
-            console.warn('Database connection failed, checking Demo Mode fallback...');
+            console.warn('Database connection failed or unreachable. Switching to Demo Mode.');
             isDemoMode = true;
         }
 
-        // Demo Mode Fallback
+        // Demo Mode Fallback: If user not found in DB OR DB failed
         if (!user || isDemoMode) {
-            // Use relative path for require to ensure it works in all environments
-            const demoData = require('../../../backend/utils/demoData');
-            const demoUser = demoData.DEMO_USERS.find((u: any) => u.email === email && u.password === password);
+            const demoUser = DEMO_USERS.find((u: any) => u.email === email && u.password === password);
 
             if (demoUser) {
                 user = {
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Verify password (if not in demo mode)
-        if (!isDemoMode) {
+        if (!isDemoMode && user) {
             const isPasswordValid = await comparePassword(password, user.passwordHash);
             if (!isPasswordValid) {
                 return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
@@ -91,27 +91,31 @@ export async function POST(req: NextRequest) {
         });
 
         // Store refresh token & Audit log (only if not in demo mode)
-        if (!isDemoMode) {
-            await prisma.user.update({
-                where: { id: user.id },
-                data: {
-                    refreshToken: tokens.refreshToken,
-                    refreshTokenExp: getRefreshTokenExpiry(),
-                    lastLoginAt: new Date(),
-                },
-            });
+        if (!isDemoMode && user.id.startsWith('user_') === false) {
+            try {
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                        refreshToken: tokens.refreshToken,
+                        refreshTokenExp: getRefreshTokenExpiry(),
+                        lastLoginAt: new Date(),
+                    },
+                });
 
-            await prisma.auditLog.create({
-                data: {
-                    action: AuditAction.USER_LOGIN,
-                    userId: user.id,
-                    tenantId: user.tenantId,
-                    resourceType: 'user',
-                    resourceId: user.id,
-                    ipAddress: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
-                    userAgent: req.headers.get('user-agent') || 'unknown',
-                },
-            });
+                await prisma.auditLog.create({
+                    data: {
+                        action: AuditAction.USER_LOGIN,
+                        userId: user.id,
+                        tenantId: user.tenantId,
+                        resourceType: 'user',
+                        resourceId: user.id,
+                        ipAddress: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
+                        userAgent: req.headers.get('user-agent') || 'unknown',
+                    },
+                });
+            } catch (auditError) {
+                console.warn('Failed to write audit log in presumed non-demo mode', auditError);
+            }
         }
 
         return NextResponse.json({
@@ -132,8 +136,7 @@ export async function POST(req: NextRequest) {
         logger.error('Error in user login', error);
         return NextResponse.json({
             error: 'Internal server error',
-            message: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            message: error.message // Return message in prod for debugging the handoff
         }, { status: 500 });
     }
 }
